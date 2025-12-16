@@ -92,13 +92,16 @@ def preprocess_image(image, model_type):
     """Preprocess image based on model type"""
     if model_type == 'simple_cnn':
         # Resize to 32x32 and normalize to [0,1]
-        img = image.resize((32, 32))
+        img = image.resize((32, 32), Image.BILINEAR)
         img_array = np.array(img).astype('float32') / 255.0
         img_array = img_array.reshape(1, 32, 32, 3)
     else:  # mobilenetv2
-        # Resize to 96x96 and normalize to [0,1]
-        img = image.resize((96, 96))
+        # Resize to 96x96 using BILINEAR (same as cv2.INTER_LINEAR default)
+        # Model has built-in Rescaling layer that converts [0,1] to [-1,1]
+        img = image.resize((96, 96), Image.BILINEAR)
         img_array = np.array(img).astype('float32') / 255.0
+        # Ensure values are clipped to [0,1] range
+        img_array = np.clip(img_array, 0.0, 1.0)
         img_array = img_array.reshape(1, 96, 96, 3)
     return img_array
 
